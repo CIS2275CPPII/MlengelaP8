@@ -1,0 +1,147 @@
+=======================
+Notes
+=======================
+
+o) The assignment asked us to overload the '<', '>' and '-' operators for the
+   date class.   We added the declarations to the date.h header file:
+
+      bool operator>(const Date &d);
+      bool operator<(const Date &d);
+      int operator-(const Date &d);
+
+   And the code to date.cpp:
+
+      bool Date::operator>(const Date &d)
+      {
+         return(dayOfYear > d.dayOfYear);
+      }
+
+      bool Date::operator<(const Date &d)
+      {
+         return(dayOfYear < d.dayOfYear);
+      }
+
+      int Date::operator-(const Date &d)
+      {
+         return(dayOfYear - d.dayOfYear);
+      }
+
+   As you can see, because each Date object has a 'dayOfYear' field, it is easy
+   to tell if one Date is larger (or smaller) than another.   We can also subtract
+   one Date object's 'dayOfYear' field from the other Date object's 'dayOfYear'
+   field to implement: operator- (which lets us subtract two Dates).
+
+o) We use our overloaded Date 'operator>' in 'ValidateInput' (AlaskanCruise.cpp),
+   here's the relevant code:
+
+      else
+      {
+         if(dep > book)
+         {
+            bValidInput = true;
+         }
+         else
+         {
+            out << 
+               "departure date (" << dep.GetFormattedDate() << ") must be later than booking date (" <<
+                  book.GetFormattedDate() << ")";
+         }
+      }
+
+   The line that says:
+
+         if(dep > book)
+
+   Is there the 'operator>' function is used, we could not compare two date objects this
+   way (using '>') if we did not implement 'operator>' for our Date calss.
+
+o) Our overload of 'operator-' is used in 'CalculateFare' (also, AlaskanCruise.cpp).   Here's
+   the relevant code:
+
+      if((dep - book) < DAYS_TO_DEPART_REQD)
+         fare =  (1.0 - DISCOUNT_PERCENT / 100.0) * fare;
+
+   See how we are subtacting the booking date from the departure date?  We can only subtract
+   two Date objects because we implemented 'operator-' for our Date class.
+
+o) Lastly, we were asked to implement 'operator +=' in our AlaskanCruise class to allow the user
+   to specify the number of excursions.   Here's the declaration from AlaskanCruise.h
+
+      const AlaskanCruise & operator +=(int exNumber);
+
+   And here is the code from AlaskanCruise.cpp:
+
+      const AlaskanCruise &AlaskanCruise::operator +=(int exNumber)
+      {
+         numberOfExcursions += exNumber;
+         return(*this);
+      }
+
+o) The 'operator +=' we supplied for our AlaskanCruise class is used in 'p8.cpp' in the
+   'makeReservation' function.  Here's the relevant code:
+
+      AlaskanCruise cruise(
+         name,
+         nPeople,
+         nDays,
+         booking,
+         departure
+      );
+
+      cruise += nExcursions;
+
+   Notice how we no longer pass the number of excurions to AlaskanCruise's constructor (as
+   we did previously in assignment p6).  The number of excurions is now supplied using
+   our overloaded AlaskanCruise 'operator+='.
+
+o) Finally, note that when we calculate the fare, we do it thusly:
+
+      void AlaskanCruise::CalculateFare()
+      {
+         // Calculate the total fare
+
+         fare = 0.0;
+
+         if(numberDaysCruise == 7)
+            fare += numberOfPass * FARE_SEVEN;
+
+         else
+            fare += numberOfPass * FARE_NINE;
+
+         if((dep - book) < DAYS_TO_DEPART_REQD)
+            fare =  (1.0 - DISCOUNT_PERCENT / 100.0) * fare;
+
+         fare += 325.0 * numberOfExcursions;
+      }
+
+   As you can see, we apply the number of excursions *after* we've
+   calculated the base fare.  This is what I believe the spec wanted, however,
+   if we were supposed to apply the discount to everything we just need to 
+   move the line the adds in the excursion cost above the line that applies
+   the discount, like this:
+
+      void AlaskanCruise::CalculateFare()
+      {
+         // Calculate the total fare
+
+         fare = 0.0;
+
+         if(numberDaysCruise == 7)
+            fare += numberOfPass * FARE_SEVEN;
+
+         else
+            fare += numberOfPass * FARE_NINE;
+
+         if((dep - book) < DAYS_TO_DEPART_REQD)
+
+         fare += 325.0 * numberOfExcursions;
+            fare =  (1.0 - DISCOUNT_PERCENT / 100.0) * fare;
+      }
+// use initializer
+AlaskanCruise::AlaskanCruise(string resName, int numPass, int numDays, int numEx, Date booking, Date departure): 
+    reservation(resName), numberOfPass(numPass), numberDaysCruise(numDays), numberOfExcursions(numEx),
+    book(booking), dep(departure)
+
+{
+    ValidateDate();
+}
